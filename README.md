@@ -2,182 +2,117 @@
 
 **Make your next study session count.**
 
-StudySprint AI is a beginner-friendly AI study-planning agent that turns a subject, a list of topics, and the time available into a practical study schedule. It is built with Amazon Bedrock, AWS Lambda, and a lightweight static HTML frontend.
+> **🚀 Live demo: [https://studysprintagent.netlify.app/](https://studysprintagent.netlify.app/)**
 
-> Built for the AWS Builder Center Weekend Challenge: “Build an agent people actually enjoy using.”
+StudySprint AI is a beginner-friendly AI study-planning agent that turns a subject, a list of topics, and the time available into a practical study schedule. It is built with Amazon Bedrock, AWS Lambda, and a lightweight HTML/CSS/JavaScript frontend.
 
-## Live Demo
+Built for the **AWS Builder Center Weekend Challenge**: “Build an agent people actually enjoy using.”
 
-- **Website:** https://studysprintagent.netlify.app/
-- **AWS Lambda Function URL:** configured in the frontend source. Avoid posting this URL publicly if you later add sensitive functionality or leave the endpoint open to unrestricted use.
+## Try the live demo
 
-## What it does
+Open **[StudySprint AI — Live Website](https://studysprintagent.netlify.app/)**, enter a subject, topics, available study time, and break length, then generate a study plan.
 
-1. Accepts a subject and up to eight comma-separated topics.
-2. Lets the student choose available study time and break length.
-3. Sends the request to an AWS Lambda backend.
-4. Uses Amazon Bedrock Converse with tool use to request a deterministic schedule from `create_study_schedule`.
-5. Returns a readable study plan and one immediate next action.
-
-The schedule tool divides study time between the topics and adds short breaks between study blocks when appropriate. Input limits help keep sessions manageable.
-
-## Built with
-
-- **Amazon Bedrock** — generates the conversational explanation and uses tool calling.
-- **AWS Lambda** — hosts the Python backend and handles requests from the frontend.
-- **AWS Lambda Function URL** — provides an HTTPS endpoint for the browser.
-- **Amazon CloudWatch Logs** — helps diagnose backend errors.
-- **HTML, CSS, and JavaScript** — responsive single-page frontend.
-- **Netlify** — static frontend hosting.
-- **Python and Boto3** — backend implementation and Bedrock Converse integration.
-
-## Architecture
-
-```text
-Student
-  |
-  v
-StudySprint AI frontend (HTML/CSS/JavaScript on Netlify)
-  |
-  | HTTPS POST (JSON)
-  v
-AWS Lambda Function URL
-  |
-  v
-AWS Lambda (Python + Boto3)
-  |
-  v
-Amazon Bedrock Converse
-  |
-  | tool use: create_study_schedule
-  v
-Deterministic schedule function in Lambda
-  |
-  v
-Bedrock explains the schedule
-  |
-  v
-JSON response displayed in the frontend
-```
-
-No database is required for the current version. AWS credentials are not placed in the browser; the Lambda execution role is used to call Bedrock.
-
-## Repository structure
-
-```text
-.
-├── frontend/
-│   └── index.html
-├── backend/
-│   ├── lambda_function.py
-│   └── bedrock-invoke-policy.json
-├── tests/
-│   └── test_schedule.py
-├── ARTICLE_DRAFT.md
-└── README.md
-```
-
-If your repository uses different filenames or folders, update this tree to match the files you actually commit.
-
-## Run locally
-
-The frontend is a static page. Open `frontend/index.html` in a browser or serve it with a local HTTP server:
-
-```bash
-cd frontend
-python -m http.server 8000
-```
-
-Then visit http://localhost:8000.
-
-The frontend must contain your deployed Lambda Function URL in the `API_URL` constant. To test locally, add `http://localhost:8000` as an allowed origin in the Lambda Function URL CORS configuration. For a deployed website, allow the exact Netlify origin, such as `https://studysprintagent.netlify.app`.
-
-## Deploy the backend on AWS
-
-### 1. Create the Lambda function
-
-1. Open the AWS Lambda console in a region where your chosen Bedrock model is available.
-2. Create a function named `StudySprintAgent` using a supported Python runtime.
-3. Copy the contents of `backend/lambda_function.py` into the Lambda code editor, or upload the backend package.
-4. Set the function timeout to around 30 seconds.
-5. Set the environment variable `MODEL_ID` to a model ID available to your AWS account and region. The starter default is `amazon.nova-micro-v1:0`; verify availability before using it.
-6. Attach a least-privilege execution-role policy that permits invoking the selected Bedrock model.
-7. Deploy the function.
-
-### 2. Configure the Function URL
-
-1. In the Lambda function, open **Configuration → Function URL** and create a URL if one does not already exist.
-2. For a public demo, `NONE` authentication allows requests without AWS IAM signing. Anyone who obtains the URL may be able to invoke the function.
-3. Configure CORS to allow the exact frontend origin, the `POST` method, and the `content-type` header.
-4. Deploy/save the configuration and copy the generated URL.
-
-The Lambda Function URL's CORS configuration should be the source of CORS headers. If you configure CORS there, avoid also adding conflicting CORS headers in the Lambda response. The current backend may need its `http_response` headers adjusted to match your final deployed configuration.
-
-### 3. Configure the frontend
-
-Set `API_URL` in `frontend/index.html` to your Lambda Function URL:
-
-```javascript
-const API_URL = "https://YOUR-FUNCTION-ID.lambda-url.YOUR-REGION.on.aws/";
-```
-
-Deploy the `frontend/` directory to Netlify or another static hosting service. Ensure the deployed origin exactly matches the CORS origin configured for the Function URL.
-
-## Test it
-
-Example input:
-
+Example:
 - **Subject:** Data Structures
 - **Topics:** Stacks, Queues, Linked Lists, Trees
 - **Available time:** 90 minutes
 - **Break length:** 5 minutes
 
-Expected behavior: the agent returns a schedule that allocates study time across the topics, includes breaks when appropriate, and gives a clear first action.
+The agent returns a topic-by-topic schedule and a clear next action.
 
-You can also test:
-- A single topic with 30 minutes available.
-- Missing subject or topics (should return a helpful client/server validation error).
-- More than eight topics (the frontend should reject the input).
-- A backend/model permission error (the frontend should show an error rather than silently fail).
+## What it does
 
-### Run local unit tests
+1. Accepts a subject and up to eight comma-separated topics.
+2. Lets the student choose available study time and break length.
+3. Sends the request to an AWS Lambda backend over HTTPS.
+4. Uses Amazon Bedrock Converse with tool use to request a schedule from `create_study_schedule`.
+5. Returns the study plan for display in the browser.
 
-If the test file is included and Python is installed, run from the repository root:
+The schedule tool performs the schedule calculation in Lambda; Bedrock provides the conversational explanation.
 
-```bash
-python -m unittest discover -s tests -v
+## Technology stack
+
+- **Amazon Bedrock Converse** — model response and tool-use flow.
+- **AWS Lambda (Python)** — backend request handling and schedule logic.
+- **AWS Lambda Function URL** — HTTPS endpoint for the frontend.
+- **Boto3** — AWS SDK for Python.
+- **HTML, CSS, JavaScript** — responsive single-page frontend.
+- **Netlify** — frontend hosting.
+- **Amazon CloudWatch Logs** — backend troubleshooting.
+
+## Architecture
+
+```text
+Student
+  ↓
+StudySprint AI frontend (Netlify)
+  ↓ HTTPS POST (JSON)
+AWS Lambda Function URL
+  ↓
+AWS Lambda (Python + Boto3)
+  ↓
+Amazon Bedrock Converse
+  ↔ create_study_schedule tool in Lambda
+  ↓
+Study plan returned to the frontend
 ```
 
-These tests validate the local schedule logic only. They do not prove that your AWS account permissions, Bedrock model access, CORS configuration, or live deployment work.
+The current version does not require a database. AWS credentials are not stored in the browser; the Lambda execution role is used for AWS service access.
 
-## The delightful detail
+## Repository structure
 
-StudySprint is designed around a small interaction: it asks for only a subject, topics, available time, and break length. It then returns a manageable schedule and one immediate next action instead of overwhelming the student with a long study strategy. The frontend also provides a loading state and readable error messages.
+```text
+StudySprint-AI/
+├── README.md
+├── .gitignore
+├── IAMR.png
+├── LAMBDA.png
+├── backend/
+│   ├── bedrock-invoke-policy.json
+│   └── lambda_function.py
+└── frontend/
+    └── index.html
+```
 
-Use your own testing observations in the project article when describing whether this design worked well for users.
+## Run the frontend locally
+
+From the repository root:
+
+```bash
+cd frontend
+python3 -m http.server 8000
+```
+
+Then open [http://localhost:8000](http://localhost:8000). The frontend's `API_URL` must point to the deployed Lambda Function URL. For local testing, configure the Lambda Function URL CORS policy to allow `http://localhost:8000`.
+
+## AWS deployment overview
+
+1. Create a Python AWS Lambda function and deploy `backend/lambda_function.py`.
+2. Configure the model ID using the `MODEL_ID` environment variable and verify that the model is available to your account and region.
+3. Give the Lambda execution role only the Bedrock permissions required for the selected model. See `backend/bedrock-invoke-policy.json` as a starting point and adjust it to your account and region.
+4. Configure a Lambda Function URL and its CORS policy for the exact frontend origin, `POST`, and `content-type`.
+5. Set the frontend `API_URL` in `frontend/index.html` to the Function URL.
+6. Deploy the `frontend/` directory to Netlify.
+
+## Testing
+
+Try a variety of inputs, such as a single topic, several topics, missing required fields, and a model/permission error. Review CloudWatch Logs if the backend returns an error. A successful response with `tool_used: true` indicates that the schedule tool was used for that request.
+
+If you add or restore automated tests to this repository, run them from the project root using the test command documented alongside those tests.
 
 ## Security and cost notes
 
-- Bedrock invocations and other AWS usage may incur charges. Review current pricing and billing before testing.
-- Create an AWS Budget alert and monitor CloudWatch logs.
-- Never put AWS access keys or other secrets in frontend JavaScript or commit them to Git.
-- A Function URL with `NONE` authentication is publicly invocable. For a public or production service, add appropriate authentication, rate limiting/throttling, abuse controls, and monitoring.
-- Restrict the Lambda execution role to the model resource and actions actually required.
-- Do not send sensitive personal information to the demo.
+- Bedrock invocations and other AWS usage may incur charges. Review current pricing and monitor your AWS billing dashboard.
+- Set an AWS Budget alert before running a public demo.
+- Never commit AWS access keys, secret keys, tokens, or `.env` files.
+- A Lambda Function URL configured with `NONE` authentication is publicly invocable by anyone who has the URL. Consider authentication, throttling, abuse controls, and monitoring before using it for production.
+- Keep the Lambda execution role restricted to the actions and model resources actually required.
 
-## Challenge article checklist
+## Project links
 
-Before publishing the Builder Center article, verify that it:
-
-- Is at least 500 words.
-- Explains what the agent does and who it is for.
-- Describes how it was built, including AWS services and tools.
-- Explains the specific user-experience detail you added and how you tested it.
-- Includes a live demo link, screenshot, or short clip as proof.
-- Includes the `#agents` tag.
-- Is published within the challenge's stated submission window.
-- Has a complete Builder Profile with a profile image, country, and About section.
+- **Live demo:** https://studysprintagent.netlify.app/
+- **GitHub repository:** https://github.com/GunnerJyo/StudySprint-AI
 
 ## License
 
-No license has been specified yet. Add a `LICENSE` file before describing this repository as open source.
+No license has been specified yet. Add a `LICENSE` file if you intend to publish this project as open source.
