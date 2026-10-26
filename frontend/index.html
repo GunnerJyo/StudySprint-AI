@@ -293,15 +293,30 @@
           body: JSON.stringify(payload)
         });
 
-        let data;
+        // Read the response as text first so non-JSON AWS errors are visible.
+        const responseText = await response.text();
+        let data = null;
         try {
-          data = await response.json();
+          data = responseText ? JSON.parse(responseText) : null;
         } catch {
-          throw new Error("The server returned an unreadable response. Check the Lambda logs.");
+          const preview = (responseText || "<empty response>").slice(0, 500);
+          throw new Error(
+            `Lambda returned a non-JSON response (HTTP ${response.status}). ` +
+            `Response preview: ${preview}`
+          );
         }
 
         if (!response.ok) {
-          throw new Error(data.error || `Request failed (HTTP ${response.status}).`);
+          const detail = data && (data.error || data.message);
+          throw new Error(
+            (detail || `Request failed (HTTP ${response.status}).`) +
+            ` [HTTP ${response.status}]`
+          );
+        }
+        if (!data || typeof data !== "object") {
+          throw new Error(
+            `Lambda returned an empty or unexpected response (HTTP ${response.status}).`
+          );
         }
         if (!data.answer) {
           throw new Error("The agent returned no study plan. Check the Lambda response format.");
