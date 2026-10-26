@@ -4,32 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101828">
-  <meta name="description" content="StudySprint AI creates a realistic study plan from your topics and available time.">
+  <meta name="description" content="StudySprint AI turns study goals or an S3-hosted syllabus into a realistic study plan.">
   <title>StudySprint AI — Make your next study session count</title>
   <style>
     :root{color-scheme:light;--ink:#142033;--muted:#64748b;--line:#e2e8f0;--paper:#fff;--bg:#f5f7fb;--brand:#6558e8;--brand2:#8c7bff}
     *{box-sizing:border-box}
     body{margin:0;background:radial-gradient(circle at 80% 0%,#e9e7ff 0,transparent 28%),var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
     .wrap{max-width:1040px;margin:auto;padding:30px 20px 60px}
-    .nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:46px}
+    .nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:46px;gap:16px}
     .brand{display:flex;gap:11px;align-items:center;font-weight:800;letter-spacing:-.03em}
-    .logo{height:42px;width:42px;display:grid;place-items:center;background:linear-gradient(140deg,var(--brand),var(--brand2));color:#fff;border-radius:14px;font-size:21px;box-shadow:0 8px 20px #6558e833}
-    .pill{font-size:12px;font-weight:700;color:#5145cd;background:#eeecff;padding:7px 11px;border-radius:999px}
+    .logo{height:42px;width:42px;display:grid;place-items:center;background:linear-gradient(140deg,var(--brand),var(--brand2));color:#fff;border-radius:14px;font-size:21px;box-shadow:0 8px 20px #6558e833;flex:none}
+    .pill{font-size:12px;font-weight:700;color:#5145cd;background:#eeecff;padding:7px 11px;border-radius:999px;white-space:nowrap}
     .hero{max-width:750px;margin:0 auto 30px;text-align:center}
     .eyebrow{color:var(--brand);font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12px}
     .hero h1{font-size:clamp(36px,6vw,60px);line-height:1.04;letter-spacing:-.055em;margin:12px 0 16px}
     .hero h1 span{color:var(--brand)}
     .hero p{font-size:17px;color:var(--muted);margin:0 auto;max-width:610px}
     .layout{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:20px;align-items:start}
-    .card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:0 12px 35px #192b4b08}
+    .card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:25px;box-shadow:0 12px 35px #192b4b08;min-width:0}
     .card h2{font-size:18px;margin:0 0 5px;letter-spacing:-.02em}
     .sub{color:var(--muted);font-size:13px;margin:0 0 21px}
     .field{display:block;font-size:13px;font-weight:750;margin:17px 0 7px}
     .input,select,textarea{width:100%;border:1px solid #d7dfeb;border-radius:12px;background:#fff;padding:12px 13px;color:var(--ink);font:inherit;font-size:14px;outline:none}
     .input:focus,select:focus,textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px #6558e81a}
+    .input:read-only{background:#f8fafc;color:#475569}
     textarea{min-height:96px;resize:vertical}
     .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .helper{font-size:12px;color:var(--muted);margin-top:6px}
+    .source-panel{margin-top:2px;padding:13px;border:1px solid #e9e5ff;border-radius:14px;background:#fbfaff}
+    .source-panel .field:first-child{margin-top:0}
     .primary{display:flex;justify-content:center;align-items:center;gap:9px;width:100%;border:0;border-radius:13px;padding:14px 16px;margin-top:22px;color:#fff;background:linear-gradient(110deg,var(--brand),#796df2);font-weight:800;font-size:14px;cursor:pointer;box-shadow:0 8px 18px #6558e82b}
     .primary:hover{filter:brightness(1.04)}
     .primary:disabled{opacity:.65;cursor:wait}
@@ -37,14 +40,19 @@
     .empty{min-height:320px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:25px}
     .empty-icon{height:64px;width:64px;border-radius:20px;background:#f0eeff;color:var(--brand);display:grid;place-items:center;font-size:28px;margin-bottom:15px}
     .empty strong{color:var(--ink);font-size:15px}
-    .empty p{max-width:250px;font-size:13px}
+    .empty p{max-width:270px;font-size:13px}
     .answer{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.8}
-    .error{color:#a61b2b;background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;padding:12px;font-size:13px}
+    .error{color:#a61b2b;background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;padding:12px;font-size:13px;overflow-wrap:anywhere}
+    .status{display:flex;align-items:flex-start;gap:8px;margin-top:16px;padding:11px 12px;border-radius:12px;background:#ecfdf5;border:1px solid #bbf7d0;color:#166534;font-size:12px;line-height:1.5}
+    .status-dot{height:8px;width:8px;border-radius:50%;background:#16a34a;margin-top:4px;flex:none}
     .hint{background:#f8f7ff;border:1px solid #e9e5ff;border-radius:14px;padding:13px;margin-top:17px;display:flex;gap:10px;color:#5145cd;font-size:12px}
     .footer{text-align:center;margin-top:25px;color:var(--muted);font-size:12px}
-    .spinner{width:15px;height:15px;border:2px solid #ffffff88;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+    .spinner{width:15px;height:15px;border:2px solid #ffffff88;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex:none}
     @keyframes spin{to{transform:rotate(360deg)}}
+    [hidden]{display:none!important}
     @media(max-width:760px){.wrap{padding:20px 14px 40px}.nav{margin-bottom:35px}.layout{grid-template-columns:1fr}.hero{margin-bottom:24px}.card{padding:20px}.result{min-height:260px}.empty{min-height:220px}}
+    @media(max-width:400px){.two{grid-template-columns:1fr}.pill{font-size:10px}.hero p{font-size:15px}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
   </style>
 </head>
 <body>
@@ -53,44 +61,137 @@
       <div class="brand"><div class="logo" aria-hidden="true">✦</div><span>StudySprint <span style="color:#6558e8">AI</span></span></div>
       <span class="pill">STUDY SMARTER</span>
     </nav>
+
     <header class="hero">
       <div class="eyebrow">Your personal study-planning agent</div>
       <h1>Make your next study<br><span>session count.</span></h1>
       <p>Tell StudySprint what you need to learn and how much time you have. Get a realistic plan, one clear next step at a time.</p>
     </header>
+
     <section class="layout" aria-label="Study planner">
       <form id="planner" class="card">
         <h2>Plan a study session</h2>
-        <p class="sub">Keep it simple. You can adjust the plan next time.</p>
+        <p class="sub">Choose your topics or let the agent retrieve them from your S3 syllabus.</p>
+
         <label class="field" for="subject">Subject</label>
-        <input class="input" id="subject" name="subject" maxlength="100" placeholder="e.g. Data Structures" required>
-        <label class="field" for="topics">Topics to cover</label>
-        <textarea id="topics" name="topics" maxlength="800" placeholder="e.g. stacks, queues, linked lists, trees" required></textarea>
-        <div class="helper">Separate topics with commas. Add up to 8 topics.</div>
-        <div class="two">
-          <div><label class="field" for="time">Available time</label><select id="time" name="total_minutes"><option value="30">30 minutes</option><option value="60">1 hour</option><option value="90" selected>1.5 hours</option><option value="120">2 hours</option><option value="180">3 hours</option><option value="240">4 hours</option><option value="360">6 hours</option></select></div>
-          <div><label class="field" for="break">Break length</label><select id="break" name="break_minutes"><option value="0">No breaks</option><option value="5" selected>5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option></select></div>
+        <input class="input" id="subject" name="subject" maxlength="100" placeholder="e.g. Data Structures" autocomplete="off" required>
+        <p class="helper" id="subjectHelp" hidden>The configured sample S3 syllabus is for Data Structures. The subject is set automatically in syllabus mode.</p>
+
+        <label class="field" for="topicSource">Topic source</label>
+        <select class="input" id="topicSource" name="topic_source">
+          <option value="manual" selected>Enter topics manually</option>
+          <option value="s3">Load syllabus from Amazon S3</option>
+        </select>
+        <p class="helper" id="sourceHelp">Enter topics separated by commas. You can include up to 8 topics.</p>
+
+        <div id="manualTopics">
+          <label class="field" for="topics">Topics to cover</label>
+          <textarea id="topics" name="topics" maxlength="800" placeholder="e.g. stacks, queues, linked lists, trees" required></textarea>
+          <div class="helper">Separate topics with commas. Add up to 8 topics.</div>
         </div>
-        <button class="primary" id="submit" type="submit"><span>✦</span> Build my study plan</button>
+
+        <div id="syllabusOptions" class="source-panel" hidden>
+          <label class="field" for="syllabusModule">Syllabus module</label>
+          <select class="input" id="syllabusModule" name="module">
+            <option value="Module 1">Module 1</option>
+            <option value="Module 2">Module 2</option>
+            <option value="Module 3" selected>Module 3</option>
+            <option value="Module 4">Module 4</option>
+          </select>
+          <p class="helper">The agent will retrieve this module from the private S3 syllabus, then use those topics to create your plan.</p>
+        </div>
+
+        <div class="two">
+          <div>
+            <label class="field" for="time">Available time</label>
+            <select class="input" id="time" name="total_minutes">
+              <option value="30">30 minutes</option>
+              <option value="60">1 hour</option>
+              <option value="90" selected>1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+              <option value="240">4 hours</option>
+              <option value="360">6 hours</option>
+            </select>
+          </div>
+          <div>
+            <label class="field" for="break">Break length</label>
+            <select class="input" id="break" name="break_minutes">
+              <option value="0">No breaks</option>
+              <option value="5" selected>5 minutes</option>
+              <option value="10">10 minutes</option>
+              <option value="15">15 minutes</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="primary" id="submit" type="submit"><span aria-hidden="true">✦</span> Build my study plan</button>
         <div class="hint"><span aria-hidden="true">✧</span><span><strong>Small steps work.</strong> Your plan will prioritise a manageable session instead of an overwhelming to-do list.</span></div>
       </form>
+
       <section class="card result" aria-labelledby="result-title">
         <h2 id="result-title">Your study plan</h2>
         <p class="sub" id="result-sub">Your next steps will appear here.</p>
-        <div id="output" aria-live="polite"><div class="empty"><div class="empty-icon" aria-hidden="true">◷</div><strong>Your focus session starts here</strong><p>Enter a subject and a few topics. StudySprint will organise your time.</p></div></div>
+        <div id="output" aria-live="polite">
+          <div class="empty">
+            <div class="empty-icon" aria-hidden="true">◷</div>
+            <strong>Your focus session starts here</strong>
+            <p>Enter a subject and a few topics, or choose an S3 syllabus module. StudySprint will organise your time.</p>
+          </div>
+        </div>
       </section>
     </section>
+
     <footer class="footer">StudySprint AI · Built with Amazon Bedrock and AWS Lambda · A student-built weekend project</footer>
   </main>
+
   <script>
-    // This is the live AWS Lambda Function URL.
+    // Existing AWS Lambda Function URL; keep this the same as your current deployment.
     const API_URL = "https://oz7wuhavy2cm2mcwdp6olkds540cuzrq.lambda-url.us-east-1.on.aws/";
 
     const form = document.getElementById("planner");
     const button = document.getElementById("submit");
     const output = document.getElementById("output");
     const subtitle = document.getElementById("result-sub");
+    const subjectInput = document.getElementById("subject");
+    const subjectHelp = document.getElementById("subjectHelp");
+    const topicSource = document.getElementById("topicSource");
+    const sourceHelp = document.getElementById("sourceHelp");
+    const manualTopics = document.getElementById("manualTopics");
+    const topicsInput = document.getElementById("topics");
+    const syllabusOptions = document.getElementById("syllabusOptions");
+    const syllabusModule = document.getElementById("syllabusModule");
     const originalButtonText = "✦  Build my study plan";
+    let lastManualSubject = subjectInput.value;
+
+    subjectInput.addEventListener("input", () => {
+      if (!subjectInput.readOnly) lastManualSubject = subjectInput.value;
+    });
+
+    function updateTopicSourceUI() {
+      const useSyllabus = topicSource.value === "s3";
+
+      manualTopics.hidden = useSyllabus;
+      syllabusOptions.hidden = !useSyllabus;
+      topicsInput.required = !useSyllabus;
+      syllabusModule.required = useSyllabus;
+
+      if (useSyllabus) {
+        if (!subjectInput.readOnly) lastManualSubject = subjectInput.value;
+        subjectInput.value = "Data Structures";
+        subjectInput.readOnly = true;
+        subjectHelp.hidden = false;
+        sourceHelp.textContent = "The agent will retrieve topics from the configured private S3 syllabus.";
+      } else {
+        if (subjectInput.readOnly) subjectInput.value = lastManualSubject;
+        subjectInput.readOnly = false;
+        subjectHelp.hidden = true;
+        sourceHelp.textContent = "Enter topics separated by commas. You can include up to 8 topics.";
+      }
+    }
+
+    topicSource.addEventListener("change", updateTopicSourceUI);
+    updateTopicSourceUI();
 
     function showError(message) {
       output.replaceChildren();
@@ -101,47 +202,89 @@
       subtitle.textContent = "We couldn't create your plan.";
     }
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const topicList = document.getElementById("topics").value
-        .split(",").map(topic => topic.trim()).filter(Boolean);
-
-      const payload = {
-        subject: document.getElementById("subject").value.trim(),
-        topics: topicList.join(", "),
-        total_minutes: Number(document.getElementById("time").value),
-        break_minutes: Number(document.getElementById("break").value)
-      };
-
-      if (!payload.subject || topicList.length === 0) {
-        showError("Enter a subject and at least one topic.");
-        return;
-      }
-      if (topicList.length > 8) {
-        showError("Please enter no more than 8 topics.");
-        return;
-      }
-
+    function setLoading(useSyllabus, selectedModule) {
       button.disabled = true;
       button.replaceChildren();
       const spinner = document.createElement("span");
       spinner.className = "spinner";
+      spinner.setAttribute("aria-hidden", "true");
       button.append(spinner, document.createTextNode(" Creating your plan…"));
-      subtitle.textContent = "The agent is organising your session.";
+
+      subtitle.textContent = useSyllabus
+        ? `Retrieving ${selectedModule} from Amazon S3 and building your session.`
+        : "The agent is organising your session.";
 
       output.replaceChildren();
       const loading = document.createElement("div");
       loading.className = "empty";
       const icon = document.createElement("div");
       icon.className = "empty-icon";
-      icon.textContent = "✦";
+      icon.textContent = useSyllabus ? "▤" : "✦";
       const title = document.createElement("strong");
-      title.textContent = "Building a realistic plan…";
+      title.textContent = useSyllabus ? "Loading syllabus and building your plan…" : "Building a realistic plan…";
       const detail = document.createElement("p");
       detail.textContent = "This can take a few seconds.";
       loading.append(icon, title, detail);
       output.append(loading);
+    }
+
+    function renderSyllabusStatus(data, selectedModule) {
+      const usedTool = Array.isArray(data.tools_used) && data.tools_used.includes("get_syllabus_from_s3");
+      if (data.syllabus_used !== true || !usedTool) return;
+
+      const status = document.createElement("div");
+      status.className = "status";
+      status.setAttribute("role", "status");
+      const dot = document.createElement("span");
+      dot.className = "status-dot";
+      dot.setAttribute("aria-hidden", "true");
+      const message = document.createElement("span");
+      message.textContent = `Syllabus retrieved from Amazon S3 · ${selectedModule}. The schedule was built from the retrieved topics.`;
+      status.append(dot, message);
+      output.append(status);
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const useSyllabus = topicSource.value === "s3";
+      const selectedModule = syllabusModule.value;
+      const topicList = topicsInput.value
+        .split(",")
+        .map(topic => topic.trim())
+        .filter(Boolean);
+
+      const payload = {
+        subject: subjectInput.value.trim(),
+        topics: useSyllabus ? "" : topicList.join(", "),
+        use_syllabus: useSyllabus,
+        module: useSyllabus ? selectedModule : "",
+        total_minutes: Number(document.getElementById("time").value),
+        break_minutes: Number(document.getElementById("break").value)
+      };
+
+      if (!payload.subject) {
+        showError("Enter a subject.");
+        subjectInput.focus();
+        return;
+      }
+      if (!useSyllabus && topicList.length === 0) {
+        showError("Enter at least one topic, separated by commas.");
+        topicsInput.focus();
+        return;
+      }
+      if (!useSyllabus && topicList.length > 8) {
+        showError("Please enter no more than 8 topics.");
+        topicsInput.focus();
+        return;
+      }
+      if (useSyllabus && !selectedModule) {
+        showError("Choose a syllabus module.");
+        syllabusModule.focus();
+        return;
+      }
+
+      setLoading(useSyllabus, selectedModule);
 
       try {
         const response = await fetch(API_URL, {
@@ -169,11 +312,14 @@
         answer.className = "answer";
         answer.textContent = data.answer;
         output.append(answer);
-        subtitle.textContent = "Your plan is ready. Start with the first task.";
+        renderSyllabusStatus(data, selectedModule);
+        subtitle.textContent = data.syllabus_used === true
+          ? "Your syllabus-based plan is ready. Start with the first task."
+          : "Your plan is ready. Start with the first task.";
       } catch (error) {
         let message = error.message || "Could not reach StudySprint. Check your connection and try again.";
         if (error instanceof TypeError) {
-          message = "The browser could not reach Lambda. Check the Function URL, CORS origin, and that this updated file has been deployed to Netlify.";
+          message = "The browser could not reach Lambda. Check the Function URL, its CORS configuration, and that the updated Lambda file has been deployed.";
         }
         showError(message);
         console.error("StudySprint request failed:", error);
